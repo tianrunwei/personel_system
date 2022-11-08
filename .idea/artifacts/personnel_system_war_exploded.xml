@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="personnel_system:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/personnel_system_war_exploded</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="personnel_system/web/Web" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="personnel_system" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="gson-2.8.0" />
+          <element id="library" level="project" name="junit-4.12" />
+          <element id="library" level="project" name="mysql-connector-java-8.0.22" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>

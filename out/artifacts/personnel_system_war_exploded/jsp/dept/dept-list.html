@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>人事管理系统</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport"
+    content="width=device-width,dept-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="../../static/css/font.css">
+  <link rel="stylesheet" href="../../static/css/xadmin.css">
+  <script src="../../static/js/jquery-1.12.4.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../../static/lib/layui/layui.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../../static/js/xadmin.js"></script>
+ 
+</head>
+
+<body class="layui-anim layui-anim-up">
+
+  <div class="x-body">
+    <div class="layui-row demoTable">
+      <form class="layui-form layui-col-md12 x-so">
+        <input type="text" name="name" id='name' placeholder="请输入部门名称" autocomplete="off" class="layui-input">
+        <button type="button" class="layui-btn" data-type="reload"><i class="layui-icon">&#xe615;</i></button>
+      </form>
+    </div>
+    <xblock class='demoTable'>
+      <button class="layui-btn" onclick="x_admin_show('添加部门','./dept-add.html',700,250)"><i
+          class="layui-icon"></i>添加</button>
+<button  type="button" class="layui-btn layui-btn-danger" data-type="getCheckData"><i class="layui-icon layui-icon-delete"></i> 批量删除</button>
+      <a class="layui-btn layui-btn-small" href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon">ဂ</i>
+      </a>
+    </xblock>
+      <table   class="layui-hide" id="dept_table" lay-filter="demo"></table>
+  </div>
+  <script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit" >
+      <i class="layui-icon">&#xe642;</i>编辑 
+    </a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">
+      <i class="layui-icon">&#xe640;</i>删除 
+    </a>
+  </script>
+
+  <script>
+
+    //**************数据报表格**********
+    layui.use('table', function () {
+      var table = layui.table;
+
+      table.render({
+        elem: '#dept_table'
+        , even: true  //隔行背景
+        ,id:'dept'
+        , url: '../../deptList.action'
+        , cols: [[
+        	{type:'checkbox'}
+          ,{ field: 'id', title: 'ID', sort: true }
+          , { field: 'name', title: '部门'} 
+          , { field: 'remark', title: '详细信息'}
+          , { field: '', title: '操作', toolbar: '#barDemo' }
+        ]]
+        , page: true
+        ,done: function (res, curr, count) {
+            $('.layui-table').css("width","100%");
+            $("th[data-field='bar']").css("border-right",'none');
+          }
+      ,limits:[5,10,15]
+      });
+
+      //监听工具条
+      table.on('tool(demo)', function (obj) {
+        var data = obj.data;
+       if (obj.event === 'del') {
+          layer.confirm('真的删除行id:'+data.id, function (index) {
+        	  $.ajax({
+                  url: '../../delDept.action',
+                  type: 'post',
+                  data:{id:data.id},
+                  success: function (data) {
+                    if (data == 1) {
+                      layer.close(index);
+                      layer.msg('删除成功', {
+                        icon: 6,
+                        time: 1500
+                      }, function(){
+                        location.replace(location.href);
+                      });
+                    }else{
+                      layer.alert("删除失败！")
+                    }
+                  },
+                  error: function (e) {
+                    layer.alert("error！提交失败！")
+                  }
+                });
+          });
+        } else if (obj.event === 'edit') {
+          localStorage.setItem("data",JSON.stringify(data)); //传参
+          x_admin_show('编辑','dept-edit.html',700,250)
+
+        }
+      });
+      
+      active = {
+  	        reload: function(){
+  	          var name = $('#name');
+  	          //执行重载
+  	          table.reload('dept', {
+  	            page: {
+  	              curr: 1 //重新从第 1 页开始
+  	            }
+  	            ,where: {
+  	            	name: name.val(),
+  	            }
+  	          });
+  	        },
+  	      getCheckData:function(){ //获取选中数据
+  	        var checkStatus = table.checkStatus('dept')
+  	        ,data = checkStatus.data
+  	        if(data==""){
+  	        	layer.msg('至少也得选择一个',{icon:2});
+  	        	return;
+  	        }
+  	        var ids=''
+           
+           if(data.length>0){
+        	   for (var i = 0; i < data.length; i++) {
+   				ids += data[i].id;
+   				if(i < data.length-1) ids += ",";
+   			   }
+           }
+          layer.confirm('确定要删除吗？'+ids,function(index){
+        	  $.ajax({
+  		    	url:"../../delDepts.action",
+  		    	data:{
+  		    		"ids":ids
+  		    	},
+  		    	type:'post',
+  		    	success:function(data){
+  		    		if (data == 1) {
+  		    			layer.msg('删除成功！',{icon:6,offset:"auto",time:2000});//提示框
+  		    			setTimeout(function(){
+  	  						location.reload();//重新加载页面表格
+  	  					}, 2100);
+  					}else{
+  						layer.msg(data,{icon:5,offset:"auto",time:2000});//提示框
+  					}
+  		    	}
+  	        })
+          })
+  	        
+  	    } 
+  	      };
+      $('.demoTable .layui-btn').on('click', function(){
+          var type = $(this).data('type');
+          active[type] ? active[type].call(this) : '';
+        });
+    });
+  </script>
+</body>
+
+</html>

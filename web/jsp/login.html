@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>人事管理系统</title>
+
+    <link rel="stylesheet" href="../static/css/style.css" rel="stylesheet"/>
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="../static/js/jquery-1.12.4.min.js" charset="utf-8"></script>
+    <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
+</head>
+<body>
+
+<div class="form-structor">
+    <div class="signup">
+        <h2 class="form-title" id="signup"><span>或</span>注册</h2>
+        <div class="form-holder">
+            <input type="text" class="input" id="ce-name" placeholder="用户名"/>
+            <input type="text" class="input" id="ce-account" placeholder="登录账号"/>
+            <input type="password" class="input" id="ce-pwd" placeholder="密码"/>
+        </div>
+        <button class="submit-btn" onclick=register()>注册</button>
+    </div>
+    <div class="login slide-up">
+        <div class="center">
+            <h2 class="form-title" id="login"><span>或</span>登录</h2>
+            <div class="form-holder">
+                <input type="text" class="input" id="de-account" placeholder="登录账号"/>
+                <input type="password" class="input" id="de-pwd" placeholder="密码"/>
+            </div>
+            <button class="submit-btn" onclick=login()>登录</button>
+        </div>
+    </div>
+</div>
+
+<script src="../static/js/script.js"></script>
+<script>
+    layui.use('layer', function () {
+        var layer = layui.layer;
+    });
+
+    function login() {
+        let loginname = $('#de-account').val()
+        let password = $('#de-pwd').val()
+        $.ajax({
+            url: '../LongServlet',
+            type: 'post',
+            data: {'loginname': loginname, 'password': password},
+            success: function (data) {
+                if (data == 1) {
+                    layer.msg('登录成功', {
+                        icon: 6,
+                        time: 1500
+                    }, function () {
+                        window.location.href = 'index.jsp'//跳转页面
+                    });
+                } else {
+                    layer.alert("用户名或密码错误！")
+                }
+            },
+            error: function (e) {
+                layer.alert("error！提交失败！")
+            },
+
+        });
+    }
+
+    function register() {
+        let loginname = $('#ce-account').val()
+        let username = $('#ce-name').val()
+        let password = $('#ce-pwd').val()
+        $.ajax({
+            url: '../register.action',
+            type: 'post',
+            data: {'loginname': loginname, 'password': password, 'username': username},
+            success: function (data) {
+                if (data == 1) {
+                    layer.msg("注册成功！")
+                    $('#ce-account').val('')
+                    $('#ce-name').val('')
+                    $('#ce-pwd').val('')
+                } else {
+                    layer.alert("注册失败！")
+                }
+            },
+            error: function (e) {
+                layer.alert("error！提交失败！")
+            },
+
+        });
+    }
+</script>
+</body>
+</html>
